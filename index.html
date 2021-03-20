@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Retro Car</title>
+</head>
+<style type="text/css">
+	@font-face {
+		font-family: Flappy;
+		src: url('pp.ttf');
+	}
+
+	@keyframes blinker {
+	  50% {
+	    opacity: 0;
+	  }
+	}
+
+	@keyframes slide {
+   		from { background-position: 0 0; }
+   		to { background-position: 400px 0; }
+	}
+
+	body{
+		background: url('1.jpg');
+		background-size: cover;
+		background-position-y: -200px;
+		font-family: Flappy;
+		color: white;
+	}
+
+	.blink {
+	  animation: blinker 1s linear infinite;
+	}
+
+	#container{
+		position: relative;
+		width: 500px;
+		height: 500px;
+		border: 5px solid #16c4e4;
+		border-radius: 10px;
+		box-shadow: 0px 0px 5px 5px rgba(139,131,227,1);
+		margin: 80px auto;
+		padding: 10px;
+		overflow: hidden;	
+	}
+
+	#glow{
+		position: absolute;
+		width: 518px;
+		height: 520px;
+		top: -5px;
+		left: -5px;
+		border: 5px solid #16c4e4;
+		border-radius: 10px;
+		box-shadow: inset 0px 0px 5px 5px rgba(139,131,227,1);	
+	}
+
+	#wrapper{
+		position: absolute;
+		width: 300px;
+		height: 500px;
+		overflow: hidden;	
+		/*border: 1px solid blue;*/
+	}
+
+	#background{
+		position: absolute;
+		top: 100px;
+		right: -100px;
+		width: 500px;
+		height: 300px;
+		background: url('road.jpg');
+		background-size: cover;
+		transform: rotate(90deg);
+  		animation: slide 2s linear infinite;
+	}
+
+	#player{
+		position: absolute;
+		width: 57px;
+		height: 80px;
+		background: url('coches.png');
+		background-position: -313px -20px;
+		visibility: visible;
+	}
+
+	.car{
+		position: absolute;
+		width: 62px;
+		height: 114px;
+		background: url('coches.png');
+		visibility: visible;
+	}
+
+	#explosion{
+		position: absolute;
+		width: 60px;
+		height: 60px;
+		background: url('explosion.png');
+		visibility: hidden;
+	}
+
+	#divider1{
+		position: absolute;
+		left: 320px;
+		height: 500px;
+		border-left: 5px solid #16c4e4;
+		box-shadow: 0px 0px 5px 5px rgba(139,131,227,1);
+		background-color: #fff;
+	}
+
+	#side{
+		position: absolute;
+		right: 10px;
+		width: 158px;
+		height: 478px;
+		background-color: #180540;
+		padding: 10px;
+	}
+
+	#gameover{
+		text-align: center;
+		font-size: 30px;
+		padding: 20px 5px;
+	}
+
+	#space{
+		position: absolute;
+		top: 200px;
+		text-align: center;
+		font-size: 20px;
+		line-height: 1.5;
+		background-color: black;
+	}
+	
+	.show{
+		visibility: hidden;
+	}
+
+	.paused{
+		-webkit-animation-play-state:paused;
+		-moz-animation-play-state:paused;
+		-o-animation-play-state:paused; 
+		animation-play-state:paused;
+	}
+</style>
+<body>
+	<div id="container">
+		<div id="glow"></div>
+		<div id="wrapper">
+			<div id="background"></div>
+			<div id="player"></div>
+			<div id="cars"></div>
+			<div id="explosion"></div>
+			<div id="space" class="show">
+				<p>Press space to restart</p>
+			</div>
+		</div>
+		<div id="divider1"></div>
+		<div id="side">
+			<p>Level : </p>
+			<p id="level">1</p>
+			<p>Score : </p>
+			<p id="score">0</p>
+
+			<p id="gameover" class="blink show">Game Over!</p>
+		</div>
+
+		<!-- <audio src="background.wav" loop="true" autoplay="true"></audio> -->
+	</div>
+
+	<script type="text/javascript">
+		var player = {
+			x: 30, y: 400
+		}
+
+		var cars = [
+			{ x: 50, y: 0, framex: 1, framey: 0},
+			{ x: 180, y: -300, framex: 2, framey: 1},
+			{ x: 210, y: -600, framex: 3, framey: 0},
+			{ x: 60, y: -900, framex: 4, framey: 1},
+			{ x: 90, y: -1200, framex: 5, framey: 0},
+			{ x: 50, y: -1500, framex: 6, framey: 1},
+			{ x: 100, y: -1800, framex: 7, framey: 1},
+			{ x: 150, y: -2100, framex: 8, framey: 0},
+			{ x: 90, y: -2400, framex: 9, framey: 0},
+			{ x: 160, y: -2700, framex: 10, framey: 1},
+		]
+
+		var getCar = document.getElementsByClassName('car');
+		var lastCar = -2700;
+		var speed = 10;
+		var level = 1;
+		var carCount = 0;
+		var framex = 1;
+		var framey = 0;
+		var score = 0;
+		var gameOver = 0;
+
+		function displayPlayer(){
+			document.getElementById('player').style.top = player.y+'px';
+			document.getElementById('player').style.left = player.x+'px';
+		}
+
+		function displayCars(){
+			var output = '';
+			for(i=0; i<cars.length; i++){
+				output += '<div class="car" style="top: '+cars[i].y+'px; left: '+cars[i].x+'px; background-position: -'+cars[i].framex*62+'px -'+cars[i].framey*114+'px;"></div>';
+			}
+			document.getElementById('cars').innerHTML = output;
+		}
+
+		function movePlayer(){
+			if(player.y < 400){
+				player.y += speed;
+			}else if(player.y > 400){
+				player.y = 400;
+			}
+		}
+
+		function moveCars(){
+			for(i=0; i<cars.length; i++){
+				cars[i].y += speed;
+
+				if(cars[i].y > 420){
+					score++;
+					cars[i].y = lastCar;
+
+					var rnd = Math.floor((Math.random() * 10));
+					cars[i].framex = rnd;
+
+					var rndx = Math.floor((Math.random() * 210)) + 31;
+					var rndx = Math.floor(Math.random() * (215 - 31 + 1)) + 31;
+					cars[i].x = rndx;
+
+					carCount++;
+
+					if(carCount > 10){
+						carCount = 0;
+						speed += 5;
+						level++;
+						document.getElementById('level').innerHTML = level;
+					}
+
+					document.getElementById('score').innerHTML = score;
+				}
+			}
+		}
+
+		function detectCollision(){
+
+			for(var i = 0; i < cars.length; i++){
+				if(Math.abs(cars[i].x - player.x) < 50 && Math.abs(cars[i].y - player.y) < 80){
+					document.getElementById('explosion').style.top = player.y+"px";
+					document.getElementById('explosion').style.left = player.x+"px";
+					document.getElementById('explosion').style.visibility = 'visible';
+					
+					document.getElementById('player').classList.add('blink');
+					getCar[i].classList.add('blink');
+					clearInterval(clearInt);
+
+					document.getElementById('space').style.visibility = 'visible';
+					document.getElementById('gameover').style.visibility = 'visible';
+
+					document.getElementById('background').classList.add('paused');
+
+					gameOver = 1;
+
+					// var src = 'car.wav';
+					// var aud = new Audio();
+					
+					// aud.src = src;
+					// aud.play();
+				}
+			}
+		}
+
+		function displayExplosion(){
+			document.getElementById('explosion').style.background = "url('explosion.png') -"+framex*64+"px -"+framey*64+"px";
+
+			if(framex <= 4){
+				framex++;
+			}else if(framex == 5){
+				framex = 1;
+				framey++;
+			}
+		}
+
+		function gameLoop(){
+			displayPlayer();
+			displayCars();
+			movePlayer();
+			moveCars();
+			detectCollision();
+		}
+
+		var clearInt = setInterval(gameLoop, 100);
+		setInterval(displayExplosion, 100);
+
+		document.onkeydown = function(e){
+			if(e.keyCode == 37){ //left
+				if(player.x >= 31){
+					player.x -=20;
+				}
+			}else if(e.keyCode == 38){//up
+				if(player.y >= 10){
+					player.y -=20;
+				}
+			}else if(e.keyCode == 39){ //right
+				if(player.x <= 205){
+					player.x += 20;
+				}
+			}else if(e.keyCode == 40){
+				if(player.y <= 510){
+					player.y += 20;
+				}
+			}else if(e.keyCode == 32 && gameOver == 1){
+				location.reload();
+			}
+		}
+
+		displayPlayer();
+		displayCars();
+		// movePlayer();
+	</script>
+</body>
+</html>
